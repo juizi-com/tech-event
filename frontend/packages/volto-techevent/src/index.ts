@@ -7,6 +7,10 @@ import installSettings from './config/settings';
 import installViews from './config/views';
 import installWidgets from './config/widgets';
 
+import { RecurrenceWidget } from '@plone/volto/components';
+
+
+
 export function applyConfig(config: ConfigType) {
   installSettings(config);
   installBlocks(config);
@@ -14,6 +18,7 @@ export function applyConfig(config: ConfigType) {
   installRoutes(config);
   installViews(config);
   installWidgets(config);
+  config.widgets.id.recurrence = RecurrenceWidget;
   return config;
 }
 

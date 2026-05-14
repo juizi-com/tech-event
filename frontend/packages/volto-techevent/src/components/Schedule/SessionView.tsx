@@ -14,6 +14,8 @@ import Video from '@plone-collective/volto-techevent/components/Video/Video';
 import messages from '@plone-collective/volto-techevent/messages';
 import { useIntl } from 'react-intl';
 
+import SessionPoster from '@plone-collective/volto-techevent/components/Schedule/SessionPoster';
+
 interface SessionViewProps {
   content: SessionInfo | TrainingInfo;
 }
@@ -46,6 +48,19 @@ const SessionView: React.FC<SessionViewProps> = ({ content }) => {
               <div className="sessionDescription">{description}</div>
             </Container>
 
+            {content.alternative_rooms && content.alternative_rooms.length > 0 && (
+  <Container className="sessionAlternativeRooms sessionSection">
+    <h3>{intl.formatMessage(messages.alternativeRooms)}</h3>
+    <ul className="alternative-rooms-list">
+      {content.alternative_rooms.map((room) => (
+        <li key={room.token} className="alternative-room-item">
+          {room.title}
+        </li>
+      ))}
+    </ul>
+  </Container>
+)}
+
             {content?.text?.data && (
               <Container className="sessionBody sessionSection">
                 <h3>{intl.formatMessage(messages.details)}</h3>
@@ -67,12 +82,37 @@ const SessionView: React.FC<SessionViewProps> = ({ content }) => {
                 />
               </Container>
             )}
+
             {content.session_video && (
-              <Container className="sessionVideo sessionSection">
-                <h3>{intl.formatMessage(messages.video)}</h3>
-                <Video url={content.session_video} />
+  <Container className="sessionVideo sessionSection">
+    <h3>{intl.formatMessage(messages.video)}</h3>
+    <div className="session-video-grid">
+      {(Array.isArray(content.session_video)
+        ? content.session_video
+        : [content.session_video]
+      ).map((url, index) => (
+        <Video key={index} url={url} />
+      ))}
+    </div>
+  </Container>
+)}
+            
+            {content.session_poster && ( /**Poster*/
+              <Container className="sessionPoster sessionSection">
+                <h3>{intl.formatMessage(messages.poster)}</h3>
+                <SessionPoster content={content} />
               </Container>
             )}
+
+            {content.session_registration_url && (/**Registration button */
+              <Container className="sessionRegistration sessionSection">
+               
+                <a href={content.session_registration_url} className="session-registration-button" target="_blank" rel="noopener noreferrer">
+                  {intl.formatMessage(messages.register)}
+                </a>
+              </Container>
+            )}
+
             {content.items && content.items.length > 0 && (
               <Container className="sessionMaterials sessionSection">
                 <h3>{intl.formatMessage(messages.materials)}</h3>

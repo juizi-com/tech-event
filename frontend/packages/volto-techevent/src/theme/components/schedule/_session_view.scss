@@ -25,6 +25,30 @@ body.contenttype-training {
           .sessionSection {
             margin-top: $spacing-medium;
           }
+          .session-registration-button {
+            display: inline-block;
+            padding: $spacing-xsmall $spacing-medium;
+            border: 1px solid var(--theme-foreground-color);
+            border-radius: $spacing-xsmall;
+            background-color: var(--theme-foreground-color);
+            color: var(--theme-color) !important;
+            text-decoration: none !important;
+            @include add(size, m);
+            @include add(weight, bold);
+            &:hover {
+              opacity: 0.9;
+              color: var(--theme-color) !important;
+            }
+          }
+          .session-video-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: $spacing-small;
+            .video {
+              flex: 1 1 calc(50% - #{$spacing-small});
+              min-width: 280px;
+            }
+          }
         }
         .sessionPresenters {
           display: block;
@@ -52,6 +76,15 @@ body.contenttype-training {
             .sessionTitle {
               @include add(size, l);
               @include add(height, l);
+            }
+            .session-registration-button {
+              display: block;
+              text-align: center;
+            }
+            .session-video-grid {
+              .video {
+                flex: 1 1 100%;
+              }
             }
           }
         }

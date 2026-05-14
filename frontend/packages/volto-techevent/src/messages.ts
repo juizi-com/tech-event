@@ -93,6 +93,22 @@ const messages = defineMessages({
     id: 'Presentations',
     defaultMessage: 'Presentations',
   },
+  poster: {
+    id: 'Poster',
+    defaultMessage: 'Poster',
+  },
+  register: {
+  id: 'register',
+  defaultMessage: 'Register',
+},
+registration: {
+  id: 'Registration',
+  defaultMessage: 'Registration',
+},
+alternativeRooms: {
+  id: 'Alternative View Locations',
+  defaultMessage: 'Alternative View Locations',
+},
 });
 
 export default messages;

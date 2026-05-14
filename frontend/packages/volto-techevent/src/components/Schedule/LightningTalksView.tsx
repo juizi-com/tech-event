@@ -59,11 +59,19 @@ const LightningTalksView: React.FC<LightningTalksViewProps> = ({ content }) => {
             )}
 
             {content.session_video && (
-              <Container className="sessionVideo sessionSection">
-                <h3>{intl.formatMessage(messages.video)}</h3>
-                <Video url={content.session_video} />
-              </Container>
-            )}
+  <Container className="sessionVideo sessionSection">
+    <h3>{intl.formatMessage(messages.video)}</h3>
+    <div className="session-video-grid">
+      {(Array.isArray(content.session_video)
+        ? content.session_video
+        : [content.session_video]
+      ).map((url, index) => (
+        <Video key={index} url={url} />
+      ))}
+    </div>
+  </Container>
+)}
+
             {content.items && content.items.length > 0 && (
               <Container className="sessionMaterials sessionSection">
                 <h3>{intl.formatMessage(messages.materials)}</h3>

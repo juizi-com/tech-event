@@ -1,5 +1,5 @@
 import type { Content } from '@plone/types';
-import type { Brain, Link, RichText, Term } from './common';
+import type { Brain, ImageScales, Link, RichText, Term } from './common';
 import type { Presenter } from './presenter';
 import type { Audience, Duration, Level, Track } from './eventSettings';
 
@@ -18,6 +18,7 @@ export interface ScheduleInfo extends Content {
   start: string | null;
   end: string | null;
   room: Term[] | null;
+  alternative_rooms: Term[] | null;
 }
 
 export interface SessionInfo extends ScheduleInfo {
@@ -28,7 +29,9 @@ export interface SessionInfo extends ScheduleInfo {
   session_track: Level[];
   text: RichText | null;
   session_language: Term;
-  session_video: string | null;
+  session_video: string[] | null;
+  session_poster: ImageScales | null;  // poster
+  session_registration_url: string | null;  // registration button
 }
 
 export interface TrainingInfo extends SessionInfo {
@@ -43,7 +46,7 @@ export interface LightningTalk {
 
 export interface LightningTalksInfo extends ScheduleInfo {
   talks: LightningTalk[];
-  session_video: string | null;
+  session_video: string[] | null;
 }
 
 export interface SlotItem {

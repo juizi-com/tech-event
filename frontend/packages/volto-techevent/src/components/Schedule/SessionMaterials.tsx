@@ -19,12 +19,17 @@ interface SessionMaterialsProps {
 const SessionMaterials: React.FC<SessionMaterialsProps> = ({ content }) => {
   // Only support YouTube links for now
   const { items } = content;
+
+  /**filter so that only file and link types are visible */
+    const materials = items?.filter(
+    (item) => item['@type'] === 'File' || item['@type'] === 'Link',
+  );
   return (
-    items &&
-    items.length > 0 && (
+    materials &&
+    materials.length > 0 && (
       <Container className="session materials">
         <ul className="session-materials-list">
-          {items.map((item, index) => {
+          {materials.map((item, index) => {
             const { title } = item;
             return (
               <li key={index} className="session-material-item">
