@@ -70,3 +70,4 @@ def durations_training(context: DexterityContent) -> SimpleVocabulary:
     for duration in durations:
         terms.append(SimpleTerm(duration["id"], duration["id"], duration["title"]))
     return SimpleVocabulary(terms)
+

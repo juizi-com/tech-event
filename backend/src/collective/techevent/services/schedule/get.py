@@ -4,6 +4,7 @@ from copy import deepcopy
 from datetime import datetime
 from datetime import timedelta
 from dateutil.parser import parse
+from dateutil.rrule import rrulestr
 from plone import api
 from plone.dexterity.content import DexterityContent
 from plone.restapi.interfaces import ISerializeToJsonSummary
@@ -11,6 +12,9 @@ from plone.restapi.serializer.converters import json_compatible
 from plone.restapi.services import Service
 from typing import Any
 from zope.component import getMultiAdapter
+
+from plone.protect.interfaces import IDisableCSRFProtection
+from zope.interface import alsoProvides
 
 
 def dict_as_sorted_list(data: dict, enforceIso: bool = False) -> list[dict]:
@@ -33,6 +37,43 @@ def dict_as_sorted_list(data: dict, enforceIso: bool = False) -> list[dict]:
     return response
 
 
+def expand_recurring_slots(slots: list[dict]) -> list[dict]:
+    """Expand recurring slots into multiple occurrences based on recurrence rule."""
+    response = []
+    for slot in slots:
+        recurrence = slot.get("recurrence")
+        if not recurrence:
+            response.append(slot)
+            continue
+
+        raw_start = slot.get("start")
+        raw_end = slot.get("end")
+        if not raw_start or not raw_end:
+            response.append(slot)
+            continue
+
+        start_dt = parse(raw_start)
+        end_dt = parse(raw_end)
+        duration = end_dt - start_dt
+
+        try:
+            rule = rrulestr(recurrence, dtstart=start_dt, ignoretz=False)
+            occurrences = list(rule)
+            if not occurrences:
+                response.append(slot)
+                continue
+            for occurrence in occurrences:
+                new_slot = deepcopy(slot)
+                new_slot["start"] = occurrence.isoformat()
+                new_slot["end"] = (occurrence + duration).isoformat()
+                response.append(new_slot)
+        except Exception:
+            # If recurrence parsing fails, fall back to original slot
+            response.append(slot)
+
+    return response
+
+
 def process_trainings(slots: list[dict]) -> list[dict]:
     """Break whole day training sessions as 2 slots."""
     response = []
@@ -45,12 +86,10 @@ def process_trainings(slots: list[dict]) -> list[dict]:
         start = parse(raw_start)
         end = parse(raw_end)
         if (end - start).seconds > 14400:
-            # change the first slot end
             new_end = (start + timedelta(seconds=14400)).isoformat()
             slot["end"] = new_end
             response.append(slot)
             slot = deepcopy(slot)
-            # change the second slot start
             new_start = (end - timedelta(seconds=14400)).isoformat()
             slot["start"] = new_start
             slot["end"] = raw_end
@@ -78,21 +117,22 @@ def group_slots(slots: list[dict], rooms_vocab: dict[str, str]) -> list[dict]:
     response = []
     days = {}
 
+    # Expand recurring slots before processing
+    slots = expand_recurring_slots(slots)
+
     # Pre-process training slots to split long sessions
     slots = process_trainings(slots)
     for slot in slots:
         start = slot.get("start", "")
         if not start:
             continue
-        day = start[0:10]  # Extract date part (YYYY-MM-DD)
+        day = start[0:10]
         days.setdefault(day, []).append(slot)
 
-    # Convert grouped days dict to a sorted list of dicts
     response = dict_as_sorted_list(days)
     for day in response:
         rooms = set()
 
-        # Collect all room tokens and slot types for the day
         for slot in day["items"]:
             room_tokens = (
                 [r.get("token") for r in slot.get("room", [])]
@@ -101,13 +141,11 @@ def group_slots(slots: list[dict], rooms_vocab: dict[str, str]) -> list[dict]:
             )
             rooms.update(room_tokens or ["_all_"])
 
-        # Order rooms: first those not in vocab, then those in vocab order
         other_rooms = [room for room in rooms if room not in rooms_vocab]
-        vocab_rooms = [room for room in rooms_vocab if room in rooms]  # in vocab order
+        vocab_rooms = [room for room in rooms_vocab if room in rooms]
         ordered_rooms = other_rooms + vocab_rooms
         day["rooms"] = [[room, rooms_vocab.get(room, room)] for room in ordered_rooms]
 
-        # Assign grid positioning for each slot (for UI layout)
         for slot in day["items"]:
             start_dt = parse(slot.get("start")) if slot.get("start") else None
             end_dt = parse(slot.get("end")) if slot.get("end") else None
@@ -116,11 +154,9 @@ def group_slots(slots: list[dict], rooms_vocab: dict[str, str]) -> list[dict]:
                 if slot.get("room")
                 else []
             )
-            # Assign gridColumn: which track/room the slot belongs to
             if slot.get("@type") == "Keynote":
                 slot["gridColumn"] = "room-1 / room-all"
             elif room_tokens:
-                # Use room-# with index+1 of the slot's room in vocab_rooms (not ordered_rooms)
                 token = room_tokens[0]
                 if token in vocab_rooms:
                     track_index = vocab_rooms.index(token) + 1
@@ -128,14 +164,11 @@ def group_slots(slots: list[dict], rooms_vocab: dict[str, str]) -> list[dict]:
                 else:
                     slot["gridColumn"] = "room-1"
             else:
-                # If no room, span all tracks
                 slot["gridColumn"] = "room-1 / room-all"
-            # Assign gridRow: time slot range for the slot
             if start_dt and end_dt:
                 slot["gridRow"] = f"{time_slot(start_dt)} / {time_slot(end_dt)}"
             else:
                 slot["gridRow"] = ""
-            # Assign gridHeight: duration of the slot in grid units
             slot["gridHeight"] = round(
                 ((end_dt - start_dt).seconds // 60 if start_dt and end_dt else 0) / 15
             )
@@ -148,9 +181,35 @@ class ScheduleGet(Service):
 
     context: DexterityContent
 
+    def reply(self) -> dict[str, list[dict]]:
+        alsoProvides(self.request, IDisableCSRFProtection)
+        rooms = self.get_rooms()
+        raw_slots = self.get_slots()
+        slots = group_slots(raw_slots, rooms)
+        return json_compatible({"items": slots})
+
     def _serialize_brain(self, brain) -> dict[str, Any]:
         obj = brain.getObject()
         result = getMultiAdapter((obj, self.request), ISerializeToJsonSummary)()
+        # Include recurrence if available
+        recurrence = getattr(obj, "recurrence", None)
+        if recurrence:
+            result["recurrence"] = recurrence
+        # Enrich presenters using catalog brain to get pre-computed image_scales
+        presenters = getattr(obj, "presenters", None)
+        if presenters:
+            enriched = []
+            for rel in presenters:
+                presenter_obj = rel.to_object
+                if presenter_obj:
+                    brains = api.content.find(UID=presenter_obj.UID())
+                    if brains:
+                        summary = getMultiAdapter(
+                            (brains[0], self.request), ISerializeToJsonSummary
+                        )()
+                        enriched.append(summary)
+            if enriched:
+                result["presenters"] = enriched
         return result
 
     def get_rooms(self) -> dict[str, str]:
@@ -160,6 +219,7 @@ class ScheduleGet(Service):
         return {room.token: room.title for room in rooms}
 
     def get_slots(self) -> list[dict[str, Any]]:
+        alsoProvides(self.request, IDisableCSRFProtection)
         portal = api.portal.get()
         review_states = getattr(self.context, "schedule_review_states", None)
         results = api.content.find(
@@ -171,8 +231,4 @@ class ScheduleGet(Service):
         )
         return [self._serialize_brain(brain) for brain in results]
 
-    def reply(self) -> dict[str, list[dict]]:
-        rooms = self.get_rooms()
-        raw_slots = self.get_slots()
-        slots = group_slots(raw_slots, rooms)
-        return json_compatible({"items": slots})
+    

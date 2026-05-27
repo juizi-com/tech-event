@@ -18,7 +18,7 @@ class IScheduleSlot(model.Schema):
     model.fieldset(
         "schedule",
         label=_("Schedule"),
-        fields=["start", "end", "room"],
+        fields=["start", "end", "room", "alternative_rooms"],
     )
 
     start = schema.Datetime(title=_("Start time"), required=False)
@@ -52,3 +52,12 @@ class IScheduleSlot(model.Schema):
         ),
         required=False,
     )
+
+    alternative_rooms = schema.Set(
+    title=_("Alternative Viewing Locations"),
+    description=_("Additional rooms where this session can be viewed"),
+    value_type=schema.Choice(
+        vocabulary="collective.techevent.vocabularies.slot_rooms",
+    ),
+    required=False,
+)

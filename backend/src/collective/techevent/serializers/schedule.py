@@ -33,11 +33,14 @@ class SessionJSONSummarySerializer(DefaultJSONSummarySerializer):
         response = []
         value = {value} if isinstance(value, str) else value
         for item in value:
-            term = vocabulary.getTerm(item)
-            response.append({
-                "title": term.title,
-                "token": term.token,
-            })
+            try:
+                term = vocabulary.getTerm(item)
+                response.append({
+                    "title": term.title,
+                    "token": term.token,
+                })
+            except LookupError:
+                continue
         return response
 
     def format_relations(self, value: set) -> list[dict]:

@@ -19,6 +19,9 @@ import ScheduleBlockInfo from '@plone-collective/volto-techevent/components/Bloc
 import SessionGridItem from '@plone-collective/volto-techevent/components/Blocks/Listing/SessionGridItem';
 import PresenterGridItem from '@plone-collective/volto-techevent/components/Blocks/Listing/PresenterGridItem';
 
+//schedule grid template
+import ScheduleGridVariation from '@plone-collective/volto-techevent/components/Blocks/Listing/ScheduleGridVariation';
+
 declare module '@plone/types' {
   export interface BlocksConfigData {
     levelBenefitsBlock: BlockConfigBase;
@@ -65,6 +68,15 @@ export default function install(config: ConfigType) {
     component: SessionGridItem,
     dependencies: 'Training',
   });
+  // Schedule Grid listing variation
+  config.blocks.blocksConfig.listing.variations = [
+    ...(config.blocks.blocksConfig.listing.variations || []),
+    {
+      id: 'scheduleGrid',
+      title: 'Schedule Grid',
+      template: ScheduleGridVariation,
+    },
+  ];
 
   return config;
 }

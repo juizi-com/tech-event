@@ -83,10 +83,10 @@ class BrainSessionSerializer(DefaultJSONSummarySerializer):
     def local_metadatata_fields(self) -> set[str]:
         return {
             "image_field",
-            "image_scales",
+            # Remove "image_scales" from here
             "description",
             "presenters",
-        }
+    }
 
     def metadata_fields(self):
         fields = super().metadata_fields()
@@ -109,11 +109,15 @@ class BrainSessionSerializer(DefaultJSONSummarySerializer):
             if not value:
                 continue
             for item in value:
-                term = vocabulary.getTerm(item)
-                response.append({
-                    "title": term.title,
-                    "token": term.token,
+                try:
+                    term = vocabulary.getTerm(item)
+                    response.append({
+                        "title": term.title,
+                        "token": term.token,
                 })
-            result[field_id] = response
+                except LookupError:
+                    # Term no longer exists in vocabulary, skip it
+                    continue
+        result[field_id] = response
 
         return result

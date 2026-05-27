@@ -8,6 +8,8 @@ from z3c.relationfield.schema import RelationChoice
 from z3c.relationfield.schema import RelationList
 from zope import schema
 from zope.interface import provider
+from plone.namedfile.field import NamedBlobFile
+from plone.namedfile.field import NamedBlobImage
 
 
 @provider(IFormFieldProvider)
@@ -68,14 +70,42 @@ class IEventSession(model.Schema):
         required=False,
     )
 
-    session_video = schema.URI(
+    session_video = schema.List(
         title=_("Video"),
         description=_("Video content for this session"),
+        value_type=schema.URI(),
+        required=False,
+        default=[],
+        missing_value=[],
+    )
+
+    #Poster
+    session_poster = NamedBlobImage(
+        title=_("Poster"),
+        description=_("Upload a poster image for this session"),
         required=False,
     )
 
+    #Register
+    session_registration_url = schema.URI(
+        title=_("Registration URL"),
+        description=_("URL for session registration"),
+        required=False,
+    )
+
+    #Downloadable content
+   # session_materials = NamedBlobFile(
+   #     title=_("Downloadable Content"),
+   #     description=_("Upload materials related to this session"),
+   #     required=False,
+
+    #)
+
     directives.order_before(
+       # session_materials="*",
         session_video="*",
+        session_poster="*",
+        session_registration_url="*",
         session_audience="*",
         session_level="*",
         session_language="*",

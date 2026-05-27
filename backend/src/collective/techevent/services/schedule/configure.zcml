@@ -2,7 +2,6 @@
     xmlns="http://namespaces.zope.org/zope"
     xmlns:plone="http://namespaces.plone.org/plone"
     >
-
   <plone:service
       method="GET"
       factory=".get.ScheduleGet"
@@ -10,5 +9,11 @@
       permission="zope2.View"
       name="@schedule"
       />
-
+  <plone:service
+      method="GET"
+      factory=".get.ScheduleGet"
+      for="collective.techevent.content.schedule.schedule.ISchedule"
+      permission="zope2.View"
+      name="@schedule"
+      />
 </configure>

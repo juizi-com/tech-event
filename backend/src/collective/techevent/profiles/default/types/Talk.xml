@@ -42,6 +42,8 @@
     <element value="plone.excludefromnavigation" />
     <element value="collective.techevent.session" />
     <element value="collective.techevent.schedule" />
+    <element value="plone.app.event.dx.behaviors.IEventBasic" />
+    <element value="plone.app.event.dx.behaviors.IEventRecurrence" />
     <element value="volto.preview_image_link" />
     <element value="plone.shortname" />
     <element value="plone.versioning" />
