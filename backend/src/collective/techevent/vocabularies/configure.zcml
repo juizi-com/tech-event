@@ -65,5 +65,9 @@
       />
 
   <!-- -*- extra stuff goes here -*- -->
+  <utility
+      name="collective.techevent.vocabularies.session_rooms"
+      component=".session.session_rooms"
+      />
 
 </configure>

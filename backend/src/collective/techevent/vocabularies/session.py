@@ -8,66 +8,76 @@ from zope.schema.vocabulary import SimpleVocabulary
 
 @provider(IVocabularyFactory)
 def session_tracks(context: DexterityContent) -> SimpleVocabulary:
-    """Available Session Tracks."""
     terms = []
     event_root = find_event_root(context)
-    tracks = event_root.tracks
-    for track in tracks:
+    if not event_root:
+        return SimpleVocabulary(terms)
+    for track in (event_root.tracks or []):
         terms.append(SimpleTerm(track["id"], track["id"], track["title"]))
     return SimpleVocabulary(terms)
 
 
 @provider(IVocabularyFactory)
 def session_levels(context: DexterityContent) -> SimpleVocabulary:
-    """Available Session Levels."""
     terms = []
     event_root = find_event_root(context)
-    levels = event_root.levels
-    for level in levels:
+    if not event_root:
+        return SimpleVocabulary(terms)
+    for level in (event_root.levels or []):
         terms.append(SimpleTerm(level["id"], level["id"], level["title"]))
     return SimpleVocabulary(terms)
 
 
 @provider(IVocabularyFactory)
 def session_audiences(context: DexterityContent) -> SimpleVocabulary:
-    """Available Session Audiences."""
     terms = []
     event_root = find_event_root(context)
-    audience = event_root.audience
-    for group in audience:
+    if not event_root:
+        return SimpleVocabulary(terms)
+    for group in (event_root.audience or []):
         terms.append(SimpleTerm(group["id"], group["id"], group["title"]))
     return SimpleVocabulary(terms)
 
 
 @provider(IVocabularyFactory)
 def durations_keynote(context: DexterityContent) -> SimpleVocabulary:
-    """Available Keynote Duration."""
     terms = []
     event_root = find_event_root(context)
-    durations = event_root.durations_keynote
-    for duration in durations:
+    if not event_root:
+        return SimpleVocabulary(terms)
+    for duration in (event_root.durations_keynote or []):
         terms.append(SimpleTerm(duration["id"], duration["id"], duration["title"]))
     return SimpleVocabulary(terms)
 
 
 @provider(IVocabularyFactory)
 def durations_talk(context: DexterityContent) -> SimpleVocabulary:
-    """Available Talk Duration."""
     terms = []
     event_root = find_event_root(context)
-    durations = event_root.durations_talk
-    for duration in durations:
+    if not event_root:
+        return SimpleVocabulary(terms)
+    for duration in (event_root.durations_talk or []):
         terms.append(SimpleTerm(duration["id"], duration["id"], duration["title"]))
     return SimpleVocabulary(terms)
 
 
 @provider(IVocabularyFactory)
 def durations_training(context: DexterityContent) -> SimpleVocabulary:
-    """Available Training Duration."""
     terms = []
     event_root = find_event_root(context)
-    durations = event_root.durations_training
-    for duration in durations:
+    if not event_root:
+        return SimpleVocabulary(terms)
+    for duration in (event_root.durations_training or []):
         terms.append(SimpleTerm(duration["id"], duration["id"], duration["title"]))
     return SimpleVocabulary(terms)
 
+@provider(IVocabularyFactory)
+def session_rooms(context: DexterityContent) -> SimpleVocabulary:
+    """Available Session Rooms."""
+    terms = []
+    event_root = find_event_root(context)
+    if not event_root:
+        return SimpleVocabulary(terms)
+    for room in (getattr(event_root, 'rooms', None) or []):
+        terms.append(SimpleTerm(room["id"], room["id"], room["title"]))
+    return SimpleVocabulary(terms)

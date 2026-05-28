@@ -54,9 +54,10 @@ def session_categories(context):
 
 @provider(IVocabularyFactory)
 def slot_rooms(context: DexterityContent) -> SimpleVocabulary:
-    """Available Slot Rooms."""
     terms = []
     event_root = find_event_root(context)
+    if not event_root:
+        return SimpleVocabulary(terms)
     for brain in api.content.find(
         event_root, portal_type="Room", sort_on=["getObjPositionInParent"]
     ):

@@ -45,12 +45,10 @@ class Vocabulary(SimpleVocabulary):
 class PresentersVocabulary:
     """Vocabulary of available Presenters"""
 
-    def query(
-        self,
-        context: DexterityContent,
-    ) -> dict:
-        """Query for Presenters."""
+    def query(self, context: DexterityContent) -> dict:
         event_root = find_event_root(context)
+        if not event_root:
+            return {"portal_type": "Presenter", "sort_on": "sortable_title"}
         return {
             "context": event_root,
             "portal_type": "Presenter",
@@ -83,4 +81,15 @@ def presenter_labels(context: DexterityContent):
     terms = []
     for token, title in LABELS.items():
         terms.append(SimpleTerm(token, token, title))
+    return SimpleVocabulary(terms)
+
+@provider(IVocabularyFactory)
+def session_rooms(context: DexterityContent) -> SimpleVocabulary:
+    """Available Session Rooms."""
+    terms = []
+    event_root = find_event_root(context)
+    if not event_root:
+        return SimpleVocabulary(terms)
+    for room in (getattr(event_root, 'rooms', None) or []):
+        terms.append(SimpleTerm(room["id"], room["id"], room["title"]))
     return SimpleVocabulary(terms)

@@ -6,13 +6,20 @@ from collective.techevent.interfaces import IEventRoot
 from plone import api
 from plone.dexterity.content import DexterityContent
 
+from plone.app.layout.navigation.interfaces import INavigationRoot
 
-def find_event_root(context: DexterityContent) -> Settings:
+
+
+def find_event_root(context: DexterityContent) -> Settings | None:
     """Find nearest event root."""
     if IEventRoot.providedBy(context):
         return context
-    else:
-        return find_event_root(aq_parent(context))
+    if INavigationRoot.providedBy(context):
+        return None
+    parent = aq_parent(context)
+    if parent is None or parent is context:
+        return None
+    return find_event_root(parent)
 
 
 def find_sponsors_db(context: DexterityContent) -> SponsorsDB | None:
