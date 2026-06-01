@@ -15,6 +15,10 @@ def find_event_root(context: DexterityContent) -> Settings | None:
     if IEventRoot.providedBy(context):
         return context
     if INavigationRoot.providedBy(context):
+        # Fall back to catalog search for any event root
+        results = api.content.find(object_provides=IEventRoot.__identifier__)
+        if results:
+            return results[0].getObject()
         return None
     parent = aq_parent(context)
     if parent is None or parent is context:
