@@ -10,16 +10,23 @@ from plone.app.layout.navigation.interfaces import INavigationRoot
 
 
 
-def find_event_root(context: DexterityContent) -> Settings | None:
+def find_event_root(context: DexterityContent) -> DexterityContent| None:
     """Find nearest event root."""
     if IEventRoot.providedBy(context):
         return context
     if INavigationRoot.providedBy(context):
         # Fall back to catalog search for any event root
-        results = api.content.find(object_provides=IEventRoot.__identifier__)
+        #limit the search to the instance of the site and to Tech Event content types
+        portal = api.portal.get()
+        results = api.content.find(
+            context=portal,
+            object_provides=IEventRoot.__identifier__,
+            portal_type='Tech Event'
+        )
         if results:
             return results[0].getObject()
         return None
+    
     parent = aq_parent(context)
     if parent is None or parent is context:
         return None
