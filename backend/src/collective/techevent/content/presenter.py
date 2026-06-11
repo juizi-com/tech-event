@@ -59,7 +59,8 @@ class Presenter(Container):
     def activities(self):
         """Return a list of activities connected to this presenter.
 
-        :returns: List of activities connected to this presenter.
+        :returns: List of activities connected to this presenter, sorted by
+        start date descending (latest first).
         """
         activities = [
             rel.from_object
@@ -68,11 +69,18 @@ class Presenter(Container):
             )
         ]
         # Only show approved activities
-        return [
+        approved = [
             activity
             for activity in activities
             if api.content.get_state(activity, default="_") == "published"
         ]
+        # Sort by start date descending (latest first), activities without a
+        # start date fall to the end
+        return sorted(
+            approved,
+            key=lambda a: getattr(a, "start", None) or "",
+            reverse=True,
+        )
 
     @property
     def labels(self) -> list[dict]:
