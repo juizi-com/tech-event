@@ -1,13 +1,13 @@
-import React from 'react';
-import { Container } from '@plone/components';
-import UniversalLink from '@plone/volto/components/manage/UniversalLink/UniversalLink';
-import { flattenToAppURL } from '@plone/volto/helpers/Url/Url';
-import type { BrainSessionInfo } from '@plone-collective/volto-techevent/types/schedule';
-import SessionMetadata from '@plone-collective/volto-techevent/components/Schedule/SessionMetadata';
-import SessionTrack from '@plone-collective/volto-techevent/components/Schedule/SessionTrack';
-import SessionAudience from '@plone-collective/volto-techevent/components/Schedule/SessionAudience';
-import SessionLevel from '@plone-collective/volto-techevent/components/Schedule/SessionLevel';
-import SessionPresenters from '@plone-collective/volto-techevent/components/Schedule/SessionPresenters';
+import React from "react";
+import { Container } from "@plone/components";
+import UniversalLink from "@plone/volto/components/manage/UniversalLink/UniversalLink";
+import { flattenToAppURL } from "@plone/volto/helpers/Url/Url";
+import type { BrainSessionInfo } from "@plone-collective/volto-techevent/types/schedule";
+import SessionMetadata from "@plone-collective/volto-techevent/components/Schedule/SessionMetadata";
+import SessionTrack from "@plone-collective/volto-techevent/components/Schedule/SessionTrack";
+import SessionAudience from "@plone-collective/volto-techevent/components/Schedule/SessionAudience";
+import SessionLevel from "@plone-collective/volto-techevent/components/Schedule/SessionLevel";
+import SessionPresenters from "@plone-collective/volto-techevent/components/Schedule/SessionPresenters";
 
 interface SessionTileProps {
   item: BrainSessionInfo;
@@ -15,6 +15,7 @@ interface SessionTileProps {
   showAudience: boolean;
   showLevel: boolean;
   shortDate: boolean;
+  occurrenceDate?: string; //for accepting date prop when passed down from listing block for recurrence handling
 }
 
 const SessionTile: React.FC<SessionTileProps> = ({
@@ -24,9 +25,13 @@ const SessionTile: React.FC<SessionTileProps> = ({
   showLevel,
   shortDate = false,
   showRoom = true,
+  occurrenceDate,
 }) => {
   const uid = item.UID;
-  const type = item['@type'];
+  const type = item["@type"];
+  const href = occurrenceDate
+    ? `${flattenToAppURL(item["@id"])}?occurrence=${occurrenceDate}`
+    : flattenToAppURL(item["@id"]);
 
   return (
     <Container
@@ -36,19 +41,21 @@ const SessionTile: React.FC<SessionTileProps> = ({
       <SessionMetadata item={item} shortDate={shortDate} showRoom={showRoom} />
       <Container className="sessionData">
         <Container className="sessionHeader">
-          <div className="sessionTitle">
+          <h3 className="sessionTitle">
             <UniversalLink
-              href={flattenToAppURL(item['@id'])}
-              className={'title'}
+              href={href}
+              className={"title"}
             >
               {item.title}
             </UniversalLink>
-          </div>
+          </h3>
           {showDescription && (
             <div className="sessionDescription">{item.description}</div>
           )}
-          {showAudience && <SessionAudience item={item} />}
-          {showLevel && <SessionLevel item={item} />}
+          <div className="sessionAudienceLevel">
+            {showAudience && <SessionAudience item={item} />}
+            {showLevel && <SessionLevel item={item} />}
+          </div>
         </Container>
         <Container className="sessionBody">
           {item.presenters && <SessionPresenters item={item} />}

@@ -42,13 +42,13 @@ const PresenterImage: React.FC<{ presenter: PresenterSummary }> = ({
   );
 };
 
+// Fixed — forces UTC so server and client agree
 function formatDay(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-GB', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.toLocaleDateString("en-GB", {
+    weekday: "long", year: "numeric", month: "long",
+    day: "numeric", timeZone: "UTC",
   });
 }
 
@@ -122,6 +122,7 @@ if (token) {
                     showDescription
                     showLevel
                     showAudience
+                    occurrenceDate={day.id} //pass the day date down as a prop for recurrence
                   />
                   {item.presenters?.length > 0 && (
                     <div className="schedule-presenters">

@@ -83,13 +83,3 @@ def presenter_labels(context: DexterityContent):
         terms.append(SimpleTerm(token, token, title))
     return SimpleVocabulary(terms)
 
-@provider(IVocabularyFactory)
-def session_rooms(context: DexterityContent) -> SimpleVocabulary:
-    """Available Session Rooms."""
-    terms = []
-    event_root = find_event_root(context)
-    if not event_root:
-        return SimpleVocabulary(terms)
-    for room in (getattr(event_root, 'rooms', None) or []):
-        terms.append(SimpleTerm(room["id"], room["id"], room["title"]))
-    return SimpleVocabulary(terms)
