@@ -50,7 +50,10 @@ body.contenttype-training {
             }
           }
         }
-        .sessionPresenters {
+        .sessionPresenters.mobile {
+          display: none;
+        }
+        .sessionPresenters.desktop {
           display: block;
           flex: 1 1 30%;
           padding: 0 $spacing-medium;
@@ -68,11 +71,8 @@ body.contenttype-training {
         padding: 0 $spacing-xsmall;
         .sessionWrapper {
           flex-wrap: wrap;
-          .sessionData,
-          .sessionPresenters {
-            flex: 1 1 100%;
-          }
           .sessionData {
+            flex: 1 1 100%;
             .sessionTitle {
               @include add(size, l);
               @include add(height, l);
@@ -86,6 +86,13 @@ body.contenttype-training {
                 flex: 1 1 100%;
               }
             }
+          }
+          .sessionPresenters.mobile {
+            display: block;
+            flex: 1 1 100%;
+          }
+          .sessionPresenters.desktop {
+            display: none;
           }
         }
       }
