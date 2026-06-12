@@ -99,20 +99,6 @@ const SessionView: React.FC<SessionViewProps> = ({ content }) => {
               </div>
             </Container>
 
-            {content.session_video && content.session_video.length > 0 && (
-              <Container className="sessionVideo sessionSection">
-                <h3>{intl.formatMessage(messages.video)}</h3>
-                <div className="session-video-grid">
-                  {(Array.isArray(content.session_video)
-                    ? content.session_video
-                    : [content.session_video]
-                  ).map((url, index) => (
-                    <Video key={index} url={url} />
-                  ))}
-                </div>
-              </Container>
-            )}
-
             {/* Only show the registration button if the session hasn't ended yet,
                 or if it is a recurring event (future occurrences may still be upcoming). */}
             {content.session_registration_url && isUpcoming && (
@@ -125,6 +111,20 @@ const SessionView: React.FC<SessionViewProps> = ({ content }) => {
                 >
                   {intl.formatMessage(messages.register)}
                 </a>
+              </Container>
+            )}
+
+            {content.session_video && content.session_video.length > 0 && (
+              <Container className="sessionVideo sessionSection">
+                <h3>{intl.formatMessage(messages.video)}</h3>
+                <div className="session-video-grid">
+                  {(Array.isArray(content.session_video)
+                    ? content.session_video
+                    : [content.session_video]
+                  ).map((url, index) => (
+                    <Video key={index} url={url} />
+                  ))}
+                </div>
               </Container>
             )}
 

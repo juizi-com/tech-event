@@ -24,27 +24,18 @@ const PresenterTile: React.FC<PresenterTileProps> = ({ item }) => {
 
   return (
     <Container className={`presenterTile ${portal_type}`}>
-      <Container className="imgWrapper">
-        {hasImage ? (
-          <Image
-            item={item}
-            imageField={'image'}
-            alt={item.title}
-            className={'presenterImage'}
-          />
-        ) : (
-          <Image
-            src={DefaultImageSVG}
-            alt="Default image"
-            className={'presenterImage'}
-          />
-        )}
-      </Container>
-      <Container className="presenterTitle">
-        <UniversalLink href={flattenToAppURL(item['@id'])} className={'title'}>
-          {title}
-        </UniversalLink>
-      </Container>
+      <UniversalLink href={flattenToAppURL(item['@id'])} className="tileLink">
+        <Container className="imgWrapper">
+          {hasImage ? (
+            <Image item={item} imageField="image" alt={title} className="presenterImage" />
+          ) : (
+            <Image src={DefaultImageSVG} alt="Default image" className="presenterImage" />
+          )}
+        </Container>
+        <Container className="presenterTitle">
+          <span className="title">{title}</span>
+        </Container>
+      </UniversalLink>
       {social_links && (
         <Container className="presenterLinks">
           <SocialNetworks networks={social_links} animate={true} />
