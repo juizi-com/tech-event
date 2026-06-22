@@ -1,6 +1,5 @@
 import React from 'react';
 import SocialNetworks from '@plonegovbr/volto-social-media/components/SocialNetworks/SocialNetworks';
-import DefaultImageSVG from '@plone/volto/components/manage/Blocks/Listing/default-image.svg';
 import { Container } from '@plone/components';
 import type { Presenter as PresenterContent } from '@plone-collective/volto-techevent/types/presenter';
 import PresenterCategory from './PresenterCategory';
@@ -18,10 +17,9 @@ interface PresenterViewProps {
  * @returns Markup of the component.
  */
 const PresenterView: React.FC<PresenterViewProps> = ({ content }) => {
+  /**Removed default image */
   const hasImage = Boolean(content?.image);
-  const imgProps = hasImage
-    ? { item: { ...content, image_field: 'image' } }
-    : { src: DefaultImageSVG };
+  const imgProps = { item: { ...content, image_field: 'image' } };
   const { title, description, text, social_links, activities } = content;
   const descriptionLines = description ? description.split('\n') : [];
 
@@ -29,7 +27,7 @@ const PresenterView: React.FC<PresenterViewProps> = ({ content }) => {
     <Container id="page-document" className="view-wrapper presenter-view">
       <Container className={'wrapper has--align--left'}>
         <Card className="profile">
-          <Card.Image {...imgProps} />
+          {hasImage && <Card.Image {...imgProps} />}
           <Card.Summary>
             <Container className="presenter-labels">
               {content.categories &&

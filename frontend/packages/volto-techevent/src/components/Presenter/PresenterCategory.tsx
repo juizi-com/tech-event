@@ -17,7 +17,7 @@ const icons = {
 const messages = defineMessages({
   'pf-member': {
     id: 'pf-member',
-    defaultMessage: 'Plone Foundation Member',
+    defaultMessage: 'NITheCS Associate',
   },
   'keynote-speaker': {
     id: 'keynote-speaker',

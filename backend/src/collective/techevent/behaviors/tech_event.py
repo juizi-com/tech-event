@@ -221,7 +221,7 @@ class ISettings(model.Schema):
         title=_("Session Audience"),
         description=_("Target group for this audience."),
         required=False,
-        value_type=DictRow(schema=ILevel),
+        value_type=DictRow(schema=IAudienceGroup),
         default=[],
     )
     directives.widget(

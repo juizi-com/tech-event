@@ -14,7 +14,7 @@ LABELS = {
     "keynote-speaker": _("Keynote Speaker"),
     "speaker": _("Speaker"),
     "instructor": _("Instructor"),
-    "pf-member": _("Plone Foundation Member"),
+    "pf-member": _("NITheCS Associate"),
 }
 
 

@@ -103,7 +103,7 @@ class BrainSessionSerializer(DefaultJSONSummarySerializer):
         ):
             context = self.context.getObject()
             vocabulary = get_vocabulary_for_attr(field_id, context)
-            value = getattr(context, field_id)
+            value = getattr(context, field_id, None)
             value = {value} if isinstance(value, str) else value
             response = []
             if not value:

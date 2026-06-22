@@ -1,6 +1,7 @@
 import React from "react";
 import { Container } from "@plone/components";
 import { useSelector } from "react-redux";
+import { rrulestr } from "rrule";
 import type {
   SessionInfo,
   TrainingInfo,
@@ -36,6 +37,21 @@ function shiftToOccurrenceDate(
 }
 
 /**
+ * Format a YYYY-MM-DD date string for display.
+ */
+function formatOccurrenceDate(dateStr: string): string {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+/**
  * SessionView view component.
  * @function SessionView
  * @param content - Content object.
@@ -47,13 +63,37 @@ const SessionView: React.FC<SessionViewProps> = ({ content }) => {
   const intl = useIntl();
 
   // Read the ?occurrence=YYYY-MM-DD param from the Volto Redux router state.
-  // Volto populates state.router on both server and client from the same source,
-  // so both renders see the same value — no hydration mismatch.
   const router = useSelector((state: any) => state.router);
   const occurrenceParam: string | null = router?.location?.query?.occurrence || null;
 
-  // Build effectiveContent: identical to content except start/end are shifted
-  // to the clicked occurrence date when the param is present.
+  // Parse recurrence string to get all occurrence dates (YYYY-MM-DD strings).
+  const occurrenceDates = React.useMemo(() => {
+    if (!content.recurrence || !content.start) return null;
+    try {
+      const rule = rrulestr(content.recurrence, { forceset: true });
+      const dates = rule.all();
+      if (!dates || dates.length <= 1) return null;
+      return dates.map((d) => d.toISOString().substring(0, 10));
+    } catch {
+      return null;
+    }
+  }, [content.recurrence, content.start]);
+
+  // Determine the current occurrence index (0-based).
+  const occurrenceIndex = React.useMemo(() => {
+    if (!occurrenceDates) return -1;
+    if (occurrenceParam) return occurrenceDates.indexOf(occurrenceParam);
+    // No param — assume first occurrence
+    return 0;
+  }, [occurrenceDates, occurrenceParam]);
+
+  // Build the "(1/3)" label appended to the title.
+  const occurrenceLabel =
+    occurrenceDates && occurrenceDates.length > 1
+      ? ` (${occurrenceIndex >= 0 ? occurrenceIndex + 1 : 1}/${occurrenceDates.length})`
+      : '';
+
+  // Build effectiveContent with shifted dates for the clicked occurrence.
   const effectiveContent = React.useMemo(() => {
     if (!occurrenceParam || !content.start) return content;
     const effectiveStart = shiftToOccurrenceDate(content.start, occurrenceParam);
@@ -69,10 +109,6 @@ const SessionView: React.FC<SessionViewProps> = ({ content }) => {
   }, [occurrenceParam, content]);
 
   // Determine whether the registration button should be shown.
-  // We use `end` rather than `start` so the button remains visible while the
-  // session is actively in progress, and only disappears once it has finished.
-  // For recurring events the button is always shown — future occurrences may
-  // still be upcoming even if an earlier one has passed.
   const hasRecurrence = Boolean(content.recurrence);
   const sessionEnd = effectiveContent.end ? new Date(effectiveContent.end) : null;
   const isUpcoming = hasRecurrence || (sessionEnd ? sessionEnd > new Date() : true);
@@ -85,13 +121,10 @@ const SessionView: React.FC<SessionViewProps> = ({ content }) => {
       <Container className={"wrapper"}>
         <SessionTrack item={effectiveContent} />
         <SessionMetadata item={effectiveContent} shortDate={false} />
-        {content.recurrence && (
-          <div className="session-recurrence-label">This is a recurring event</div>
-        )}
         <Container className={"sessionWrapper"}>
           <Container className="sessionData">
             <Container className="sessionHeader">
-              <h1 className="sessionTitle">{title}</h1>
+              <h1 className="sessionTitle">{title}{occurrenceLabel}</h1>
               <div className="sessionDescription">{description}</div>
               <div className="sessionAudienceLevel">
                 <SessionAudience item={effectiveContent} />
@@ -111,6 +144,24 @@ const SessionView: React.FC<SessionViewProps> = ({ content }) => {
                 >
                   {intl.formatMessage(messages.register)}
                 </a>
+              </Container>
+            )}
+
+            {/* Show all occurrence dates for recurring events */}
+            {occurrenceDates && occurrenceDates.length > 1 && (
+              <Container className="sessionRecurrenceDates sessionSection">
+                <p><strong>The dates for this series are:</strong></p>
+                <ul className="recurrence-dates-list">
+                  {occurrenceDates.map((date, i) => (
+                    <li
+                      key={date}
+                      className={`recurrence-date-item${occurrenceIndex === i ? ' current' : ''}`}
+                    >
+                      {formatOccurrenceDate(date)}
+                      {occurrenceIndex === i && ' ✓'}
+                    </li>
+                  ))}
+                </ul>
               </Container>
             )}
 
