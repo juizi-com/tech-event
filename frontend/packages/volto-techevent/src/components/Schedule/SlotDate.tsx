@@ -17,8 +17,18 @@ interface FormatProps {
   locale: string;
 }
 
+//function formatHour(value: Date, locale: string): string {
+//  return value.toLocaleTimeString(locale, {
+//    hour: "2-digit",
+//    minute: "2-digit",
+//    timeZone: "UTC",
+//  });
+//}
+
 function formatHour(value: Date, locale: string): string {
-  return value.toLocaleTimeString(locale, {
+  // Add 2 hours for SAST (UTC+2)
+  const sast = new Date(value.getTime() + 2 * 60 * 60 * 1000);
+  return sast.toLocaleTimeString(locale, {
     hour: "2-digit",
     minute: "2-digit",
     timeZone: "UTC",
@@ -38,12 +48,14 @@ const ShortFormat: React.FC<FormatProps> = ({ item, start, end, locale }) => (
 );
 
 const LongFormat: React.FC<FormatProps> = ({ item, start, end, locale }) => {
-  const date = start.toLocaleDateString('en-GB', {
+  const sast = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+  const date = sast.toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
     timeZone: 'UTC',
   });
+
   return (
     <>
       <span className="date">{date}</span> –{' '}
